@@ -1,52 +1,56 @@
 const express = require('express');
 const hbs = require('hbs');
+const fs = require('fs');
 
+const port = process.env.PORT || 3000;
 var app = express();
 
-
-hbs.registerPartials(__dirname + '/views/partials');
-// set se usa para settear configuraciones de express k, v
-// le digo a express que view engine quiero usar
+hbs.registerPartials(__dirname + '/views/partials')
 app.set('view engine', 'hbs');
-// le paso el absoult path
-// dirname tiene el path a mi project directory
-app.use(express.static(__dirname + '/public'));
 
 app.use((req, res, next) => {
-	var now = new Date().toString();
-	console.log(`${now}: ${req.method} ${req.url}`);
-	next(); //si no le pongo next nunca le aviso que termine
+  var now = new Date().toString();
+  var log = `${now}: ${req.method} ${req.url}`;
+
+  console.log(log);
+  fs.appendFile('server.log', log + '\n');
+  next();
 });
 
+// app.use((req, res, next) => {
+//   res.render('maintenance.hbs');
+// });
+
+app.use(express.static(__dirname + '/public'));
+
 hbs.registerHelper('getCurrentYear', () => {
-	return new Date().getFullYear()
+  return new Date().getFullYear();
 });
 
 hbs.registerHelper('screamIt', (text) => {
-	return text.toUpperCase();
+  return text.toUpperCase();
 });
 
 app.get('/', (req, res) => {
-	res.render('home.hbs', {
-		pageTitle: 'Home Page',
-		welcomeMessage: 'Bienvenido'
-	});
+  res.render('home.hbs', {
+    pageTitle: 'Home Page',
+    welcomeMessage: 'Welcome to my website'
+  });
 });
 
 app.get('/about', (req, res) => {
-	res.render('about.hbs', {
-		pageTitle: 'About Page'
-	});
+  res.render('about.hbs', {
+    pageTitle: 'About Page'
+  });
 });
 
-
+// /bad - send back json with errorMessage
 app.get('/bad', (req, res) => {
-	res.send({
-		errorMessage: 'Unable to handle request'
-	});
+  res.send({
+    errorMessage: 'Unable to handle request'
+  });
 });
 
-
-app.listen(3000, () => {
-	console.log('Server is running on port 3000');
+app.listen(port, () => {
+  console.log(`Server is up on port ${port}`);
 });
